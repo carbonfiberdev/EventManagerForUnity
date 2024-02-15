@@ -7,7 +7,7 @@ EventManager.AddListener("MyEvent");
 EventManager.RemoveListener("MyEvent");
 ```
 ```
-EventManager.Trigger("MyEvent");
+EventManager.TriggerEvent("MyEvent");
 ```
 
 <b>That's it !</b>
