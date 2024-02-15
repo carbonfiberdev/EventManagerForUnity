@@ -1,13 +1,13 @@
 # A yet another event manager for Unity3D game engine
 
 ```c#
-EventManager.AddListener("MyEvent");
+EventManager.AddListener("EventNameToAttachTheFunction", MyEventFunction);
 ```
 ```c#
-EventManager.RemoveListener("MyEvent");
+EventManager.RemoveListener("EventNameToAttachTheFunction", MyEventFunction);
 ```
 ```c#
-EventManager.TriggerEvent("MyEvent");
+EventManager.TriggerEvent("EventNameToCall");
 ```
 
 <b>That's it !</b>
