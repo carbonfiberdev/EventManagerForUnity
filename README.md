@@ -1,13 +1,13 @@
 # A yet another event manager for Unity3D game engine
 
 ```
-EventManager.AddListener("My event");
+EventManager.AddListener("MyEvent");
 ```
 ```
-EventManager.RemoveListener("My event");
+EventManager.RemoveListener("MyEvent");
 ```
 ```
-EventManager.Trigger("My event");
+EventManager.Trigger("MyEvent");
 ```
 
 <b>That's it !</b>
