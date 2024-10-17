@@ -2,194 +2,72 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 
-public static class EventManager {
-    private static Dictionary<string, Action> eventDictionary = new Dictionary<string, Action>();
-    private static Dictionary<string, Action<int>> intEventDictionary = new Dictionary<string, Action<int>>();
-    private static Dictionary<string, Action<float>> floatEventDictionary = new Dictionary<string, Action<float>>();
-    private static Dictionary<string, Action<bool>> boolEventDictionary = new Dictionary<string, Action<bool>>();
-    private static Dictionary<string, Action<string>> stringEventDictionary = new Dictionary<string, Action<string>>();
-    private static Dictionary<string, Action<GameObject>> objectEventDictionary = new Dictionary<string, Action<GameObject>>();
+public static class EventManager
+{
+    private static readonly Dictionary<string, Delegate> eventDictionary = new Dictionary<string, Delegate>();
 
     #region AddListeners
-    public static void AddListener(string eventName, Action listener) {
-        if (eventDictionary.ContainsKey(eventName)) {
-            eventDictionary[eventName] += listener;
-        } else {
-            eventDictionary.Add(eventName, listener);
-        }
-    }
 
-    public static void AddListener(string eventName, Action<int> listener)
+    public static void AddListener<T>(string eventName, Action<T> listener)
     {
-        if (intEventDictionary.ContainsKey(eventName))
+        if (eventDictionary.TryGetValue(eventName, out var existingDelegate))
         {
-            intEventDictionary[eventName] += listener;
+            eventDictionary[eventName] = Delegate.Combine(existingDelegate, listener);
         }
         else
         {
-            intEventDictionary.Add(eventName, listener);
+            eventDictionary[eventName] = listener;
         }
     }
 
-    public static void AddListener(string eventName, Action<float> listener) {
-        if (floatEventDictionary.ContainsKey(eventName)) {
-            floatEventDictionary[eventName] += listener;
-        } else {
-            floatEventDictionary.Add(eventName, listener);
-        }
-    }
-
-    public static void AddListener(string eventName, Action<bool> listener)
+    // Overload for no parameters using Action
+    public static void AddListener(string eventName, Action listener)
     {
-        if (boolEventDictionary.ContainsKey(eventName))
-        {
-            boolEventDictionary[eventName] += listener;
-        }
-        else
-        {
-            boolEventDictionary.Add(eventName, listener);
-        }
+        AddListener<object>(eventName, _ => listener());
     }
 
-    public static void AddListener(string eventName, Action<GameObject> listener)
-    {
-        if (objectEventDictionary.ContainsKey(eventName))
-        {
-            objectEventDictionary[eventName] += listener;
-        }
-        else
-        {
-            objectEventDictionary.Add(eventName, listener);
-        }
-    }
-
-    public static void AddListener(string eventName, Action<string> listener)
-    {
-        if (stringEventDictionary.ContainsKey(eventName))
-        {
-            stringEventDictionary[eventName] += listener;
-        }
-        else
-        {
-            stringEventDictionary.Add(eventName, listener);
-        }
-    }
     #endregion
 
     #region RemoveListeners
-    public static void RemoveListener(string eventName, Action listener) {
-        if (eventDictionary.ContainsKey(eventName)) {
-            eventDictionary[eventName] -= listener;
-        }
-    }
 
-    public static void RemoveListener(string eventName, Action<int> listener)
+    public static void RemoveListener<T>(string eventName, Action<T> listener)
     {
-        if (intEventDictionary.ContainsKey(eventName))
+        if (eventDictionary.TryGetValue(eventName, out var existingDelegate))
         {
-            intEventDictionary[eventName] -= listener;
+            var updatedDelegate = Delegate.Remove(existingDelegate, listener);
+            if (updatedDelegate == null)
+            {
+                eventDictionary.Remove(eventName);
+            }
+            else
+            {
+                eventDictionary[eventName] = updatedDelegate;
+            }
         }
     }
 
-    public static void RemoveListener(string eventName, Action<float> listener) {
-        if (floatEventDictionary.ContainsKey(eventName)) {
-            floatEventDictionary[eventName] -= listener;
-        }
-    }
-
-    public static void RemoveListener(string eventName, Action<bool> listener)
+    public static void RemoveListener(string eventName, Action listener)
     {
-        if (boolEventDictionary.ContainsKey(eventName))
-        {
-            boolEventDictionary[eventName] -= listener;
-        }
+        RemoveListener<object>(eventName, _ => listener());
     }
 
-    public static void RemoveListener(string eventName, Action<GameObject> listener)
-    {
-        if (objectEventDictionary.ContainsKey(eventName))
-        {
-            objectEventDictionary[eventName] -= listener;
-        }
-    }
-
-    public static void RemoveListener(string eventName, Action<String> listener)
-    {
-        if (stringEventDictionary.ContainsKey(eventName))
-        {
-            stringEventDictionary[eventName] -= listener;
-        }
-    }
     #endregion
 
     #region TriggerEvents
-    public static void TriggerEvent(string eventName) {
-        Action thisEvent = null;
-        if (eventDictionary.TryGetValue(eventName, out thisEvent)) {
-            thisEvent?.Invoke();
-        }
-    }
 
-    public static void TriggerEvent(string eventName, int value)
+    public static void TriggerEvent<T>(string eventName, T value)
     {
-        Action<int> thisEvent = null;
-        if (intEventDictionary.TryGetValue(eventName, out thisEvent))
+        if (eventDictionary.TryGetValue(eventName, out var existingDelegate))
         {
-            thisEvent?.Invoke(value);
+            var action = existingDelegate as Action<T>;
+            action?.Invoke(value);
         }
     }
 
-    public static void TriggerEvent(string eventName, float value) {
-        Action<float> thisEvent = null;
-        if (floatEventDictionary.TryGetValue(eventName, out thisEvent)) {
-            thisEvent?.Invoke(value);
-        }
-    }
-
-    public static void TriggerEvent(string eventName, bool value)
+    public static void TriggerEvent(string eventName)
     {
-        Action<bool> thisEvent = null;
-        if (boolEventDictionary.TryGetValue(eventName, out thisEvent))
-        {
-            thisEvent?.Invoke(value);
-        }
+        TriggerEvent<object>(eventName, null);
     }
 
-    public static void TriggerEvent(string eventName, GameObject gameObject)
-    {
-        Action<GameObject> thisEvent = null;
-        if (objectEventDictionary.TryGetValue(eventName, out thisEvent))
-        {
-            thisEvent?.Invoke(gameObject);
-        }
-    }
-
-    public static void TriggerEvent(string eventName, string gameObject)
-    {
-        Action<string> thisEvent = null;
-        if (stringEventDictionary.TryGetValue(eventName, out thisEvent))
-        {
-            thisEvent?.Invoke(gameObject);
-        }
-    }
     #endregion
-
-    public static List<Action> GetListeners(string eventName) {
-        Action thisEvent = null;
-        if (eventDictionary.TryGetValue(eventName, out thisEvent)) {
-            return new List<Action>((IEnumerable<Action>)thisEvent.GetInvocationList());
-        } else {
-            return new List<Action>();
-        }
-    }
-
-    public static List<Action<float>> GetFloatListeners(string eventName) {
-        Action<float> thisEvent = null;
-        if (floatEventDictionary.TryGetValue(eventName, out thisEvent)) {
-            return new List<Action<float>>((IEnumerable<Action<float>>)thisEvent.GetInvocationList());
-        } else {
-            return new List<Action<float>>();
-        }
-    }
 }
-
