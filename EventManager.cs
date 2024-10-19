@@ -34,15 +34,7 @@ public static class EventManager
     {
         if (eventDictionary.TryGetValue(eventName, out var existingDelegate))
         {
-            var updatedDelegate = Delegate.Remove(existingDelegate, listener);
-            if (updatedDelegate == null)
-            {
-                eventDictionary.Remove(eventName);
-            }
-            else
-            {
-                eventDictionary[eventName] = updatedDelegate;
-            }
+            eventDictionary.Remove(eventName);
         }
     }
 
